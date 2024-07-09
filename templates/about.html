@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About TALE Pair Finder</title>
+    <style>
+        body {
+            font-family: Calibri, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-size: 15px;
+        }
+        h1 {
+            color: #0056b3;
+            font-size: 24px;
+        }
+        h2 {
+            color: #0056b3;
+            font-size: 20px;
+        }
+        h3 {
+            font-size: 16px;
+        }
+        .process-step {
+            margin-bottom: 20px;
+        }
+        .code {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .back-to-index {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #0056b3;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease;
+            font-size: 12px;
+        }
+        .back-to-index:hover {
+            background-color: #003d82;
+        }
+        .my-info {
+            font-weight: bold;
+            font-style: italic;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <p class="my-info">Created by Alex Todd, please contact alextodd[at]tuta.io for inquiries, collaborations, or suggestions.</p>
+
+    <h2>Upcoming Features and Known Issues</h2>
+
+    <h3>Coming soon:</h3>
+    <ul>
+        <li>Implementation of export functionality to various formats, including CSV and others.</li>
+        <li>Integration a more efficient database system to replace SQLite.</li>
+        <li>Improve search capabilities to include individual TALEs, not just TALE pairs.</li>
+        <li>Implement off-target analysis from Grau et al. (2013).</li>
+        <li>Expansion of upstream base (T0) options beyond T to also include AGC (requires special RVDs).</li>
+        <li>Add visual analysis of DNA and TALE sequences for easy visualization of the TALE/TALEN system.</li>
+        <li>Implementation of a comprehensive pipeline from user DNA sequence submission to TALE design and creation.</li>
+        <li>Incorporation differing TALE/TALEN architectures, including various promoter and nuclease systems, with user-defined selection options.</li>
+    </ul>
+    
+    <h3>Known Bugs:</h3>
+    <ul>
+        <li>Does not eliminate TALEs in hypermethylated regions if the TALE is less than 201 bases from the start of the DNA sequence</li>
+    </ul>
+
+
+
+    <h1>About TALE Pair Finder Function</h1>
+    
+    <p>The TALE Pair Finder is a tool designed to identify potential Transcription Activator-Like Effector (TALE) binding sites within a given DNA sequence. The core of this tool is the <code>find_tale_pairs</code> function, which implements an algorithm to locate TALE pairs that meet specific criteria.</p>
+
+    <h2>How the find_tale_pairs Function Works</h2>
+
+    <div class="process-step">
+        <h3>Step 1: Initial Setup</h3>
+        <p>The function begins by setting up the necessary variables and data structures:</p>
+        <ul>
+            <li>It generates the complementary DNA sequence.</li>
+            <li>Initializes empty lists and counters for various criteria.</li>
+            <li>Sets up regular expressions for pattern matching.</li>
+        </ul>
+    </div>
+
+    <div class="process-step">
+        <h3>Step 2: Define Search Boundaries</h3>
+        <p>If a specific search position and range are provided, the function calculates the start and end boundaries for the search. Otherwise, it searches the entire sequence.</p>
+    </div>
+
+    <div class="process-step">
+        <h3>Step 3: Pre-compute GC Content</h3>
+        <p>To optimize performance, the function pre-computes the GC content for all possible TALE regions in the sequence. This information is stored in an array for quick access later.</p>
+    </div>
+
+    <div class="process-step">
+        <h3>Step 4: Define Helper Functions</h3>
+        <p>Several helper functions are defined within <code>find_tale_pairs</code>:</p>
+        <ul>
+            <li><code>calculate_gc_percentage</code>: Calculates the GC content for a specific region.</li>
+            <li><code>count_strong_rvds</code>: Counts the number of strong RVDs (NN or HD) in a sequence.</li>
+            <li><code>is_cpg_island</code>: Determines if a region is a CpG island based on GC content and observed-to-expected CpG ratio.</li>
+        </ul>
+    </div>
+
+    <div class="process-step">
+        <h3>Step 5: Main Search Loop</h3>
+        <p>The function then enters nested loops to search for TALE pairs:</p>
+        <ol>
+            <li>It iterates through possible TALE lengths (from min_tale_length to max_tale_length).</li>
+            <li>For each length, it scans the DNA sequence within the defined boundaries.</li>
+            <li>At every 'T' base, it considers this as a potential start of a TALE binding site.</li>
+        </ol>
+    </div>
+
+    <div class="process-step">
+        <h3>Step 6: Apply TALE Filtering Criteria</h3>
+        <p>For each potential TALE binding site, the function applies several filtering criteria:</p>
+        <ul>
+            <li>Checks if the region is part of a CpG island (hypermethylated region). (Currently only applies to bases >200)</li>
+            <li>Looks for consecutive A/T bases (more than 6).</li>
+            <li>Calculates the GC content (must be at least 25%).</li>
+            <li>Counts the number of strong RVDs (must have at least 3).</li>
+        </ul>
+        <p>If a potential site fails any of these criteria, it's discarded and the respective counter is incremented.</p>
+    </div>
+
+    <div class="process-step">
+        <h3>Step 7: Find Complementary TALE</h3>
+        <p>If a potential TALE site passes all criteria, the function then searches for a complementary TALE on the opposite strand:</p>
+        <ul>
+            <li>It considers a range of spacer lengths (from min_spacer_length to max_spacer_length).</li>
+            <li>For each spacer length, it checks if there's a complementary TALE site that also meets all the same criteria in step 6.</li>
+        </ul>
+    </div>
+
+    <div class="process-step">
+        <h3>Step 8: Store Valid TALE Pairs</h3>
+        <p>If both the original TALE and its complementary TALE pass all criteria, the pair is stored in the results list. Each pair includes:</p>
+        <ul>
+            <li>Start and end positions for both TALEs</li>
+            <li>RVD sequences for both TALEs</li>
+            <li>Spacer length</li>
+            <li>TALE length</li>
+        </ul>
+    </div>
+
+    <div class="process-step">
+        <h3>Step 9: Post-processing</h3>
+        <p>After the search is complete, the function:</p>
+        <ul>
+            <li>Sorts the TALE pairs based on the position of the start of the sense strand TALE.</li>
+            <li>CpG island ranges identified for easier visualization.</li>
+        </ul>
+    </div>
+
+    <div class="process-step">
+        <h3>Step 10: Return Results</h3>
+        <p>Finally, the function returns:</p>
+        <ul>
+            <li>The list of valid TALE pairs</li>
+            <li>Counts of discarded potential TALEs for various reasons</li>
+        </ul>
+    </div>
+    <br><br>
+
+    <h2>1-Day TALE Assembly Method</h2>
+
+    <p>This web tool incorporates the rapid TALE assembly method developed by Zhang et al. (2019) in their paper "Generate TALE/TALEN as Easily and Rapidly as Generating CRISPR" (Molecular Therapy: Methods & Clinical Development). This method allows for the creation of novel TALEs in just one day, significantly reducing the time and complexity of TALE construction.</p>
+    <p>TALEs have been almost completely abanodoned for other genetic editing methods due to the protacted and arduous vector construction process due to the repetitive nature of TALEs.</p>
+    <h3>Key Features of the Rapid TALE Assembly Method:</h3>
+
+    <ol>
+        <li><strong>New Monomer Library:</strong> The method uses a set of 62 new monomers (60 base-determinant monomers and 2 linker monomers) that can be easily produced and reproduced by high-fidelity PCR amplification.</li>
+        
+        <li><strong>Plasmid-Free Monomers:</strong> Unlike traditional methods that use plasmid-based monomers, this approach uses linear DNA fragments, which are more efficient in digestion-ligation reactions.</li>
+        
+        <li><strong>Universal Primers:</strong> All monomers can be amplified using a pair of universal primers, facilitating high-throughput production in a 96-well PCR plate format.</li>
+        
+        <li><strong>Streamlined Assembly Pipeline:</strong> The new method reduces the number of steps and eliminates time-consuming bacterial transformations, allowing for TALE assembly in a single day.</li>
+        
+        <li><strong>Golden-Gate Cloning:</strong> The assembly process uses Golden-Gate digestion-ligation reactions for efficient and precise assembly of TALE constructs.</li>
+    </ol>
+
+    <h3>Assembly Process:</h3>
+
+    <ol>
+        <li><strong>Pentamer Formation:</strong> Four Golden-Gate digestion-ligation reactions are set up to create circular pentamers from the linear monomers.</li>
+        
+        <li><strong>TALE Plasmid Generation:</strong> The four pentamers are then combined with a TALE backbone vector in another Golden-Gate digestion-ligation reaction to form the final TALE plasmid.</li>
+        
+        <li><strong>Transformation and Verification:</strong> The resulting plasmid is transformed into E. coli, and positive colonies are identified by colony PCR and confirmed by restriction digestion.</li>
+    </ol>
+
+    <p>This rapid assembly method allows for the construction of custom TALEs targeting 18-bp sequences, which is a commonly used length that provides high specificity. The entire process, from selecting a target sequence to obtaining a usable TALE construct, can be completed in as little as two days, making it comparable in speed to CRISPR guide RNA design and production.</p>
+
+
+    <h2>Current Limitations</h2>
+    <ul>
+        <li>No database export.</li>
+        <li>No visualisation tools.</li>
+        <li>No off-target analysis</li>    
+    </ul>
+
+
+    <a href="{{ url_for('index') }}" class="back-to-index">Back to Main Page</a>
+</body>
+</html>

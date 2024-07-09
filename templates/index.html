@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <title>TALE Pair Finder</title>
+    <style>
+        body {
+            font-family: Calibri, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+            position: relative;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #0056b3;
+            text-align: center;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .dna-sequence-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .dna-sequence {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .submit-btn {
+            text-align: center;
+        }
+        button, .submit-btn input, .top-right-link, .bottom-right-button {
+            background-color: #0056b3;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            text-align: center;
+        }
+        button:hover, .submit-btn input:hover, .top-right-link:hover, .bottom-right-button:hover {
+            background-color: #004494;
+        }
+        h2 {
+            margin-top: 20px;
+            color: #0056b3;
+            text-align: center;
+        }
+        table {
+            width: auto;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f1f1;
+        }
+        p {
+            max-width: 600px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            form, .dna-sequence, table, p {
+                width: 100%;
+                margin: 0 auto;
+            }
+            .dna-sequence {
+                height: 150px;
+            }
+        }
+        .dna-RESULT {
+            width: 50%; 
+            height: 50px; 
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin: 0 auto 10px auto;
+            background-color: #f9f9f9;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+        .help {
+            display: inline-block;
+            color: #0056b3;
+            cursor: pointer;
+            margin-left: 5px;
+            text-decoration: underline;
+            position: relative;
+        }
+        .help:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: #161616;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            white-space: nowrap;
+            font-size: 14px;
+            margin-bottom: 5px;
+            z-index: 1;
+        }
+        table td form {
+            margin: 0;
+            padding: 0;
+        }
+        table, th, td {
+            font-size: 15px;
+        }
+        input, textarea, select {
+            background-color: #f9f9f9b0;
+        }
+        .top-right-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .bottom-right-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+        #fasta-message {
+            color: green;
+            margin-top: 10px;
+            display: none;
+        }
+        #paste-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+        }
+        .section-heading {
+            color: #0056b3;
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        .guidelines-link {
+            color: #0056b3;
+            text-decoration: none;
+        }
+        .guidelines-link:hover {
+            text-decoration: underline;
+        }
+        .help {
+            display: inline-block;
+            color: #0056b3;
+            cursor: pointer;
+            margin-left: 5px;
+            text-decoration: underline;
+            position: relative;
+        }
+
+        .help:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: #161616;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            white-space: nowrap;
+            font-size: 14px;
+            margin-bottom: 5px;
+            z-index: 1;
+        }
+        table th {
+            text-align: center;
+            background-color: #f1f1f1;
+        }
+
+        table td {
+            text-align: center;
+        }
+
+        table th[colspan], table th[rowspan] {
+            background-color: #e0e0e0;
+        }
+        .rvd-toggle {
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .sort-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+            margin-left: 5px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            margin: 0 5px;
+        }
+        .top-pagination {
+            margin-bottom: 20px;
+        }
+        .back-to-top-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #0056b3;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: none;
+            z-index: 1000;
+        }
+        .back-to-top-button:hover {
+            background-color: #004494;
+        }
+        .dna-info-container {
+        background-color: #f0f8ff;
+        border-radius: 10px;
+        padding: 15px; /* Reduced from 20px */
+        margin: 15px auto; /* Reduced from 20px */
+        max-width: 600px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .dna-info-title {
+        color: #0056b3;
+        text-align: center;
+        margin-bottom: 15px; /* Reduced from 20px */
+        font-size: 22px; /* Slightly reduced from 24px */
+    }
+    .dna-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px; /* Reduced from 15px */
+    }
+    .dna-info-item {
+        background-color: white;
+        padding: 10px; /* Reduced from 15px */
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    .dna-info-label {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 3px; /* Reduced from 5px */
+        font-size: 14px; /* Added to reduce overall height */
+    }
+    .dna-info-value {
+        color: #0056b3;
+        font-size: 16px; /* Reduced from 18px */
+    }
+    .dna-info-section {
+        margin-top: 15px; /* Reduced from 20px */
+    }
+    .dna-info-section-title {
+        color: #0056b3;
+        margin-bottom: 8px; /* Reduced from 10px */
+        font-size: 18px; /* Reduced from 20px */
+        border-bottom: 2px solid #0056b3;
+        padding-bottom: 3px; /* Reduced from 5px */
+    }
+    .dropdown-row td {
+        padding: 0;
+    }
+    
+    .dropdown-content {
+        padding: 10px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+    }
+
+    .view-both-btn {
+        cursor: pointer;
+    }
+    .dropdown-content {
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .dropdown-content h4, .dropdown-content h5 {
+            color: #0056b3;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .dropdown-content ul {
+            margin-left: 0;  /* Remove default left margin */
+            padding-left: 20px;  /* Add padding to align bullets */
+            margin-bottom: 2px;
+        }
+        
+        .dropdown-content li {
+            margin-bottom: 3px;  /* Add some space between list items */
+        }
+        
+        .dropdown-content p {
+            margin-bottom: 5px;
+        }
+            .pentamer-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .pentamer-strand h5 {
+        margin-bottom: 10px;
+        color: #0056b3;
+    }
+
+    .pentamer-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;  /* Center-align the pentamers */
+    }
+
+    .pentamer {
+        background-color: #e6f3ff;
+        border: 1px solid #0056b3;
+        border-radius: 5px;
+        padding: 5px 10px;
+        font-size: 0.9em;
+    }
+
+    .reaction-details, .thermocycler-process, .final-steps {
+        margin-top: 20px;
+        justify-content: center;  /* Center-align the pentamers */
+    }
+
+    .reaction-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+    }
+
+    .reaction-item, .process-step {
+        background-color: #f0f8ff;
+        border: 1px solid #0056b3;
+        border-radius: 5px;
+        padding: 5px 10px;
+        font-size: 0.9em;
+    }
+
+    .process-steps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;  /* Center-align the pentamers */
+
+    }
+
+    .final-steps ol {
+        padding-left: 20px;
+    }
+
+    .final-steps li {
+        margin-bottom: 5px;
+    }
+
+    /* Add some basic styling for FontAwesome icons */
+    .fas {
+        margin-right: 5px;
+        color: #0056b3;
+    }
+    .hypermethylated-region {
+            margin-top: 15px;
+        }
+        .hypermethylated-item {
+            margin-bottom: 15px; /* Add space between items in the Hypermethylated Regions section */
+        }
+        .cpg-island-ranges {
+            max-height: 100px;
+            overflow-y: auto;
+            background-color: #f0f8ff;
+            border: 1px solid #0056b3;
+            border-radius: 5px;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        .tale-binding-sites {
+    margin-bottom: 15px;
+}
+
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('about')  }}" class="top-right-link">About</a>
+    <h1>TALE Pair Finder</h1>
+    <form method="POST" action="/" id="dnaForm">
+        {{ form.hidden_tag() }}
+        <label for="dna_sequence">
+            DNA Sequence:
+            <span class="help" data-tooltip="Max no. DNA bases is currently 100,000 for database reasons. Any bases exceeding this limit will not be processed. Acceptable characters include ATCGatcg. FASTA format is also supported.">[help]</span>
+            <span class="help" id="input-example-btn" data-tooltip="Click to load an example FASTA sequence of the human sonic hedgehog (SHH) gene.">[Example sequence]</span>
+        </label>
+        <div class="dna-sequence-container">
+            {{ form.dna_sequence(class_="dna-sequence", id="dna_sequence", placeholder="Paste your DNA sequence here (raw or FASTA format)") }}
+            <button type="button" id="paste-button">📋</button>
+        </div>
+        <div id="fasta-message">FASTA format detected. Your DNA Sequence has been automatically formatted for submitting.</div>
+        <div id="dna_sequence_error" class="error" style="display: none;">Invalid characters detected. Only A, T, C, G (case insensitive) are allowed.</div>
+        {% if form.dna_sequence.errors %}
+            <div class="error">
+                {% for error in form.dna_sequence.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <label for="min_tale_length">Minimum TALE Length:<span class="help" data-tooltip="Minimum length of the TALE sequence. Must be between 10 and 30.">[help]</span></label>
+        {{ form.min_tale_length() }}
+        {% if form.min_tale_length.errors %}
+            <div class="error">
+                {% for error in form.min_tale_length.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <label for="max_tale_length">Maximum TALE Length:<span class="help" data-tooltip="Maximum length of the TALE sequence. Must be between 10 and 30.">[help]</span></label>
+        {{ form.max_tale_length() }}
+        {% if form.max_tale_length.errors %}
+            <div class="error">
+                {% for error in form.max_tale_length.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <label for="min_spacer_length">Minimum Spacer Length:<span class="help" data-tooltip="Minimum number of DNA bases from the C terminus of the sense TALE to the C terminus of the antisense TALE. Must be between 1 and 100. The difference between maximum and minimum spacer length must not exceed 30.">[help]</span></label> 
+        {{ form.min_spacer_length() }}
+        {% if form.min_spacer_length.errors %}
+            <div class="error">
+                {% for error in form.min_spacer_length.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <label for="max_spacer_length">Maximum Spacer Length:<span class="help" data-tooltip="Maximum number of DNA bases from the C terminus of the sense TALE to the C terminus of the antisense TALE. Must be between 1 and 100. The difference between maximum and minimum spacer length must not exceed 30.">[help]</span></label> 
+        {{ form.max_spacer_length() }}
+        {% if form.max_spacer_length.errors %}
+            <div class="error">
+                {% for error in form.max_spacer_length.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <label for="search_position">Search Position:<span class="help" data-tooltip="Optional: Specify a position to search around. Sense Strand. Leave blank to search the entire sequence.">[help]</span></label>
+        {{ form.search_position() }}
+        {% if form.search_position.errors %}
+            <div class="error">
+                {% for error in form.search_position.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <label for="search_range">Search Range (±):<span class="help" data-tooltip="Optional: Specify the number of bases to search on either side of the search position. Leave blank to search the entire sequence.">[help]</span></label>
+        {{ form.search_range() }}
+        {% if form.search_range.errors %}
+            <div class="error">
+                {% for error in form.search_range.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <label for="talen_code_g">TALE RVD for G:<span class="help" data-tooltip="NH shows higher specificity for G">[help]</span></label> 
+        {{ form.talen_code_g() }}
+
+        <input type="hidden" name="tale_pairs" value="{{ tale_pairs }}">
+
+        <div class="submit-btn">
+            {{ form.submit() }}
+        </div>
+    </form>
+
+    {% if dna_sequence %}
+    <div class="dna-info-container">
+        <h2 class="dna-info-title">DNA Sequence Information</h2>
+        <div class="dna-info-grid">
+            <div class="dna-info-item">
+                <div class="dna-info-label">Sequence Length:</div>
+                <div class="dna-info-value">
+                    {{ dna_sequence_length }} bases
+                    {% if searched_range %}
+                        ({{ searched_range }} searched)
+                    {% endif %}
+                </div>
+            </div>
+            <div class="dna-info-item">
+                <div class="dna-info-label">TALE Pairs Found:</div>
+                <div class="dna-info-value">{{ tale_pairs_count }}</div>
+            </div>
+            <div class="dna-info-item">
+                <div class="dna-info-label">TALE Length Range:</div>
+                <div class="dna-info-value">{{ min_tale_length }} - {{ max_tale_length }} bp</div>
+            </div>
+            <div class="dna-info-item">
+                <div class="dna-info-label">Search Time:</div>
+                <div class="dna-info-value">{{ "%.2f"|format(execution_time) }} seconds</div>
+            </div>
+        </div>
+    
+        <div class="dna-info-section hypermethylated-region">
+            <h3 class="dna-info-section-title">Hypermethylated Regions</h3>
+            <div class="dna-info-item hypermethylated-item">
+                <div class="dna-info-label">TALEs Discarded (CpG islands):</div>
+                <div class="dna-info-value">{{ cpg_island_discarded_count }}</div>
+            </div>
+            <div class="dna-info-item hypermethylated-item">
+                <div class="dna-info-label">Hypermethylated Regions:</div>
+                <div class="dna-info-value cpg-island-ranges">
+                    {% for start, end in cpg_island_ranges %}
+                        {% if start == end %}
+                            {{ start }}{% if not loop.last %}, {% endif %}
+                        {% else %}
+                            {{ start }}-{{ end }}{% if not loop.last %}, {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    
+        <div class="dna-info-section">
+            <h3 class="dna-info-section-title">Streubel et al. (2012) Guidelines</h3>
+            <div class="dna-info-grid">
+                <div class="dna-info-item">
+                    <div class="dna-info-label">Discarded (6+ consecutive A/T):</div>
+                    <div class="dna-info-value">{{ discarded_count }}</div>
+                </div>
+                <div class="dna-info-item">
+                    <div class="dna-info-label">Discarded (GC content &lt; 25%):</div>
+                    <div class="dna-info-value">{{ gc_discarded_count }}</div>
+                </div>
+                <div class="dna-info-item">
+                    <div class="dna-info-label">Discarded (&lt; 3 strong RVDs):</div>
+                    <div class="dna-info-value">{{ strong_rvd_discarded_count }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        {% if tale_pairs_count %}
+        <table id="tale-pairs-table">
+        <h2>Found TALE Pairs</h2>
+        <div class="pagination top-pagination">
+             <button id="prev-page-top" disabled>Previous</button>
+             <span id="page-info-top"></span>
+             <button id="next-page-top">Next</button>
+        </div>
+            <thead>
+                <tr>
+                    <th colspan="4">Sense TALE</th>
+                    <th rowspan="2">Spacer (bp)</th>
+                    <th colspan="4">Antisense TALE</th>
+                    <th rowspan="2" style="text-align: center;">Details</th>
+                </tr>
+                <tr>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>RVD (N- to C-) <span class="rvd-toggle" data-type="sense">🔄</span></th>
+                    <th>Length</th>
+                    <th>Start (N-)</th>
+                    <th>End</button></th>
+                    <th>RVD (N- to C-) <span class="rvd-toggle" data-type="antisense">🔄</span></th>
+                    <th>Length</th>
+                </tr>
+            </thead>
+            <tbody id="tale-pairs-body">
+                <!-- TALE pairs will be dynamically inserted here -->
+            </tbody>
+        </table>
+        <div class="pagination">
+            <button id="prev-page" disabled>Previous</button>
+            <span id="page-info"></span>
+            <button id="next-page">Next</button>
+        </div>
+    {% else %}
+        <p>No TALE pairs found.</p>
+    {% endif %}
+        <h2>Submitted DNA Sequence</h2>
+        <div class="dna-RESULT">5' {{ dna_sequence }} 3'</div>
+
+        <h2>Antisense DNA Sequence</h2>
+        <div class="dna-RESULT">3' {{ comp_dna_sequence }} 5'</div>
+    {% endif %}
+    <a href="#" class="bottom-right-button">alpha v0.70</a>
+    <textarea id="shh-sequence" style="display: none;">
+        >NC_000007.14:c155812463-155799980 Homo sapiens chromosome 7, GRCh38.p14 Primary Assembly
+ACAAGCTCTCCAGGCTTGCTACCATTTAAAATCAGACTCTTTTTGTCTTTTGATTGCTGTCTCGCGACCC
+AACTCCGATGTGTTCCGTTATCAGCGGCCGGCAGCCTGCCATTCCAGCCCCTGTCTGGGTGGGGAGCGGT
+GGAGAGTCCCCCGCAGCCGCGGCGGGCAAGGTTATATAGGAAGAGAAAGAGCGAGGCAGCCAGCGAGGGA
+GAGAGCGAGCGGGCGAGCCGGAGCGAGGAAGGGAAAGCGCAAGAGAGAGCGCACACGCACACACCCGCCG
+CGCGCACTCGCGCACGGACCCGCACGGGGACAGCTCGGAAGTCATCAGTTCCATGGGCGAGATGCTGCTG
+CTGGCGAGATGTCTGCTGCTAGTCCTCGTCTCCTCGCTGCTGGTATGCTCGGGACTGGCGTGCGGACCGG
+GCAGGGGGTTCGGGAAGAGGAGGCACCCCAAAAAGCTGACCCCTTTAGCCTACAAGCAGTTTATCCCCAA
+TGTGGCCGAGAAGACCCTAGGCGCCAGCGGAAGGTATGAAGGGAAGATCTCCAGAAACTCCGAGCGATTT
+AAGGAACTCACCCCCAATTACAACCCCGACATCATATTTAAGGATGAAGAAAACACCGGAGCGGACAGGC
+TGATGACTCAGGTAGGAACCCAGCGCCGGGGCGTGGAATGTGTGGCTTTCCAGGGGGTTACGAGAAGCCG
+AACACTTCCAGACTTAACTCTGTTTGCTCTTCGGGCAGATAGGAAGGTGATTTCACCCGCTCCTTCCCCA
+CCCACCTGCCCGCCCCCCATCTCTTCCTCTTCCTGGAGGAGAATGGAGGTCAAGGGTCCAGCTGGAGAAG
+TTTAGGGTGTGGTGGGGGTGAGGACGGTAACAGACGTGGTTCATTATGGCCCTGATTTGATGAGTCTTGC
+TACAATGGCCTTCCCCATCCTACCTCTGCCCTGGCTTGTAACTTGGGGAGACCTTCACTTTGGGGGCGTC
+GGCCCTTTCCAAGTCAGGAGTGGAAATGGAAGGAGAGGCTGGGAATCCCCCTCCCACAAACATGAAGTGG
+TCTCCTGGTACTGTACGAACGAACGAACGTAGCCTTGGGCATTGGAGCTCAGAGCCCCCACGTTTCCCGT
+TGCCTCTGTGGTTTTCTTTCCCACCACTACCCCCACCCTGCACCTCCCCACCAAAGAATTCTCAACTGGA
+AAAGCCAGGAGGCGGTTCTGACAAAAGGCAGGGGCTCCAGGGGAGACTCCGCCCGTCCCTGGGTGGCTGG
+CTGTATCGCAGAGCTGGCTTTGCGATTGCGTGTCCGCAATTGTGCCCATCAGAGTGTGAATGTATTGATA
+TTTCTTTAAGGATGCTCTTTCGTTCTTCCAAGCCCGAGGTACCTTAGGGGAGGGACTTAGAACTTATTGG
+CATTGCATCACTTTAGTTTTCAACCTGCTTGCATAAGAATTAAGAGCGAATAAATATTAGTGTGGGGGGA
+GGGGAAGCTAAGCAAAATATGAATTCCTCTCTCTCTCCCCACCTCCTTTGAGATTTCTGAGCTGCCAATC
+TCCCAGCCAATTCTAGACTTTCTGAAACTCCATGCACGTATAACTGAAGCCAGAAATGGGTTTCCTTGCA
+AATATAGGTCAACATCCTTTTTATTGCCCTATTAAAATATTCAAGTCCTACCTTTAGGGCTAGGTGCGTA
+CAGCGGCTGATGGAGTGGCGCTGGTGGGGCGCAAGTGCAGGGGGAGGGTACTGACGGCAGAGAGAGAGGA
+GCTACCTCCGTGCCGCCCTGCTTCCCGACCCGATTCCCAGGCTTGCTTGAGGCCGAGAAAGGCGAGGGGC
+AGGCAAGGTAGCCTGCTCCAGCTGTCGGAAGGGAGAGGAATGGGAAATGGTCCTGATTTCCTTGCTCTCC
+CTCATCTGCTCCCGACCACCTTAAATCTGGACCGCGAGTGTGGACGCGCGCGCCAGTGCCAGACAGCAGC
+GCGATCCACAATTAACTCTGCACGGGCCATGGGGTGCCCGTTGCGTGCAGCTGGCTGGAGGGAGTTCTCC
+GGCTAGCCCGAGGCGCCCATCCTCTCGTCACCCTCACTCCCCGCGGAGGAGGGGCCTTGCCAGGGTCCCT
+CGGAACCCGAGAGGAGGGAGGCACTGCGGAGAGAGCGGCGGGGGCGTGGATACCCGAGGTCCCAGAGCCA
+GAGTGGGTCAGCTTCTGCCCTGCTCTGCGGGAGGCCAATACCGCAGAAGGGGTCCTGGGCTCGCACACCT
+TCCCAGGGCTTGGGCCTTGCAGCCCTGCTGCAAAGCTGCAAGCGCACAGAGCCGCGCAGCGAGGCAGACG
+CCTGCAGCCCCACTTACTCCCGGGTTATCGATCCCCCGCGGCTAGGGTTTCAGTGCGCGAGGGGCTGGGC
+TGGAGCCGCCGGGCTCTGCTGCTCCACGCGCGGGAGCGCAGGCACCGCAGGAGCTAACAGCAGCGCCGGG
+CTCGCTGTAGTGTCCCCGGCGGCGGGGGCGCGGAGATGGGGGCGCCCGCGCAGGGGCCGGGGCGCATCGC
+GGGCTCCGCCGGCCTGCCCTGGGACGCGCCCCCATCCCCAGTCCGCCGCCTGCCTGGCCTCTAGGCCTCC
+GCGTCCCAGCCGGAGCCCCCAGCCCGGGGGCCTCCCCCCGACCCCCGTCCGCCCTGCCGGGGGACGCAGG
+GCCCAGCGGCCCCGCGCCCGGCCACTCTCGCCGCCGCGCGCACAGGCAGCATTTGAACTTCTGACCTTCT
+GTCAACTTCCCTCAGACGAACGAAACGAAAACAAATACTTTTTTCCTTGGGCAGTGGCTATTCCCGTTCC
+CAACACAAAAGGAGGGGGAAGGACGGCCCAAGTGGGGGTTGGGTGAGGAGAGCCAGGCCGGGATTATCAG
+GCAGACCCCACAAAGGTCCCCTAAAACCGAGGGGGGTAGGGGCTGGCAGTCTGTGAGGTATCCCCGGTTG
+ATCCCTCCCCTACCTTCCTTCTCCCGATTCCAGGAGTTAAGGGTGGGGGAGGAAGGGATGGGGAAGGCGG
+AGGCTCGGGTGCTGAGGGCAGGGGCGGGGTGCAGGAGGCGGCAGGGGAGCCCCAGGCCGGCGGGAGGTTT
+GGGGAGCCTGCTCGGCCGCCCTCATTTTAAATAACCACCTAGGCTCTGCCCCAGGTGCGTGACCCTCTTC
+TTCTGTCTCCCTCCCTGTCTCTGGGTCTCTAATGTGACTGCCGCCCAAGTCCCTCAACCATGGCGAGATC
+GTCCCCAGTGGAACTTTCGGAGCAGTTCCGGAACGCAGGAGCTGCCGGTTAATATTAACCCGGGAGAGGA
+AAGCGCAGACAGACACGCTCTCCCCGCGCGGGCCTAGGTGCCAGGCGAGGGTGCTGGCGGCCAGGGGGCT
+CCTAAGGGGCAGGAGGCCAGAGGGCCGGATCTGAAGCCTGGAGTGGGGTCCCGAGCCGCTACACTAAATA
+GATTTAATGTGCGCTCTGGGGCCGCCAGGAAAGACGCTCAGGTATGGGGTTGGGGAGGGGCTGTTCCACC
+AAGCTTGGGGGAAAGGACAGTGGAGAGAGGTGCGTTTAGGGGCTGGGGCTGTCTTGAAGCTGGGACGCCC
+CCGCCCCCGCGCTGGGGGAAGCCCACCGGCTGCTGGCGGTGACACTCGCCGGCGCGGCTCGCAGATCAGG
+GAGGTAGGCGGGAGCTCAGGCGTGGGGAACAACTTGGCCTCCGCCGACACAAAGCCCGGCCCCGGCGGCC
+CTGCTGGGCTTCACGGTGGCTGCACAGAGTCGGGCTTGATTCGCGGCACACGACCCAATGAATTAATAAC
+CGGCCTGGGCTTCCCGGCTTTGCCTGCGACAATCCCGCCCAGCGCGGGCGGAGGAGAGGCCGCCAGCCGA
+GGCCGCGCGGAGCCCGGGCCGGAGGAGGGCGCAAGGGGCGGGGGCGCCAACTCCAGCAACCCTCGGCCTC
+CGCCCCTCACTCGCGCAGCCACCTCCCGTCGCGGCCCGGCTGGACCCGGGTCTCCCTGCCCGGGGTCCTC
+CATGCCTGCCCAAGTGGCGCAGCTCACAGAGCTGGGGGCCAGGTCATCCTCACCCTGCCGCCCTCTCCCT
+GGCTGCCCTCCTGGGAAGCTGTTTAAAGCTTCTTCGGCACAGCCCCAGGGGAGGGAGCTGCGGTGGGGTG
+GGGGGCTTGCATGGGGGTCCCTGTGCGTGTTGGTGGTGTGCGCCTGCGCGCAACGGGCCTCACATCATAG
+CTCTACACTGACCCTGGTTTACTGATTGATTTTCATGTAAAACGCGTTCAATCCTCAAGATGACCTCACT
+CAAACTCTGCCCTTCCGACTTTTTTTTTTAACTGCTGGCAGGCCCACAAACATGCAGGCACTGACCTGTT
+ACCAGGGCGGCCCCCAGCCCTACCCCACCCCCAGTTGTTGCATGTTGAACTCTACAACCATATTACTGGG
+TTTTATTGCTGCCAGATACACAGGACTTTTCCTGTTGCGCAATTTGTCACGTCCCCTTAAAGCGCCGCAG
+CAGTGGGGCCAGCGTCCTCGCCCCACCCTCTCGAAAGAGTCCCCCCAACCCACGCTACAGTTAGGGCCCT
+GGATAGAAGCTGTCCCTCCATGGCGACAACCAGACTCCAAGCAGAGCATCCTTCCAGACTGGAGGAGGTT
+AGAGGTCAGCCCCGCCCTCTGCAGAAGTCACCTTGAAATTGCCCCTCGGCCTCCACTTGGCGCAGCTTCT
+TGGGGGATGCCACCATCGTCATCTGTGCCAGTTCCCCCTCTTTAAATCCCATGTCCCACCAGCAGCAGCA
+GGGTAAACATCCAGGAAGCAAGTCAGTGCCCCCACAAACACACACAGTGGATTCAACTGCTTTCTGTCGC
+ATCCTTATCTGAGGGTGACCCCAGAATTCCAGGGGAACCCCCACAATCTGAATCCCAGGTAACCCCGTCT
+GCATCTGCCTAGTCAGTGTTTCCTGCCTCCTCCCAGGCAACTTCCTGGGAAACTCCCCAGGCGGAGGACT
+CCGAGACCTCAGGCCTTCCTGTCTCCCCTCCCCCTCCTCTCAAACCCCTCCCCCTCCCTCCACCTCTTCA
+GTTTGCTCTTCAAACTTGCTGGACGCCATTCTATGCTGGGGCCAAGAACACAAGAGCGGAGGAAGGGAAC
+AGGTTAAAGAAAACAAGAAACACAATCAGACCACAGAAAAGCCAGGCAGAAAAGGGTTCGACGGGCAAAA
+AGAATGTGGCTGTCCAGATAAAGAATGTCTGTCCCGGCCCCGGCCTGTGCTGCAAGTGGCAACTCACCTA
+GCCGCCTGCCACCCAGGCTCCCGCCCACCGCGCAGCCCCGCCAGCGGCTTCTCGCCTCCCCTCTGCCTCG
+GATAGGGTTAGGGCCTGAGGTAAATAAATGCAAGGCCTTCAATTCTCCAAGCAGTGCGCAGTGCATTTTT
+CTTTATTTCTGGGAACTTGCGCCCAGGTCTCTGTCAGGCCTGCTGTGAGGGATTCTACGCGGGGAGAAGG
+TGGAGGCTGCGCAGGTGGAGAAAGGGGCCCCAGAAGGGGGGCTAGAAGTGGAGGGCAACGTGGGGGCGGG
+GCGGGTATCCCAGAGGGTGCCCCTGGAGGGTCCTGTAGTTGATGTCTTAAACATGCAGGTCACTTGTTTC
+AGAGAAACTTTATTTGCTTCTTAGGCCTCGCTAGGAGCATCGGCTGTTTCAGGACCTGGAGAAAGGCCCC
+CAGCTCTACCCTGAGAGGACGTGCTCCTCCACGCTCCTCCGCAAATGCTGTCCCTCTTCCCCAGCCCAGG
+GCCCGGCTCTTCGGTGTGTCTGGGCCATTCCAACCCCCGTCTCCCCACCTCTCCGCATGGCCCTCGCGCC
+TTGAGACTGGGCAGGGCAGGCTGATGGAGGGGCCGGGAGGGGTGGCGGTTGCCCAGGCTAACGTGTCCGT
+CGGTGGGGGTCCCCTTGTCTTCGCAGAGGTGTAAGGACAAGTTGAACGCTTTGGCCATCTCGGTGATGAA
+CCAGTGGCCAGGAGTGAAACTGCGGGTGACCGAGGGCTGGGACGAAGATGGCCACCACTCAGAGGAGTCT
+CTGCACTACGAGGGCCGCGCAGTGGACATCACCACGTCTGACCGCGACCGCAGCAAGTACGGCATGCTGG
+CCCGCCTGGCGGTGGAGGCCGGCTTCGACTGGGTGTACTACGAGTCCAAGGCACATATCCACTGCTCGGT
+GAAAGCAGGTAAGCTGGCCCTGGCCCCCCGGATCCGACCCAAGGAAGGCCATTGGCGCACCTCGGCTTGA
+TTCAAGAGAAAAAGAAACCTGGGGGGAGGCTGAGGGCCAGGAGCAGGGTCGCTGGGCGATGACTGCGTTT
+CCGCGGTGGAACCTGCCCTGTGAGGTGCCGGCCCCTCGAAATCACCCCTACCTTTGAGGCCACAGAGCCC
+AAGGTTCTCCATGCCCCGAGATGGGGTCCTGTGGCTTCCTGCCCGCTTCTGGAGCCCCCACTGCAGGGGG
+TGGGAAAGCGTGACTGGGGGAGGGGCGCTAGGCCCTTCCAGGCGAGGGAAGACAGCCCTGCGCGGTTAGC
+CAGGTCTGGGCGAGCTCCTTCCTCTCGTTTAGGGCTTAAGAACCAACCGCCCCCACCCGCTATCCCAAGC
+GCAGGGGTGTCTATCCTGCCCCGGAGCCCGCGTCCTGGCTCCTCCCCGCCGGGCGCCCGTGGATCCTAAG
+CTGCCTTTGGGGAGAGGCCTGGTGGGCGGCAGTAAACCCAGGGGCAACCACCTCCAGCATCTGGAGGCGG
+CGCGCCCGGAGCCTGCGTTCCTACTGGGAGCCGGGCCGGGACGCCCTGGGCGGCGGGCAGGCCCCGAAAC
+GCCGGCCCGAGTCGGCGCGAGGCTGTCTTCTCTGGGCCTGCAACGCCACACGCTGTTGCCGGCGAGGAAC
+AGCCGTGGAGGAGGCGCCATCGCGCGCACGCAAACCTCCGGCCCGAGGCTGTGTGCACAGCGCTCTTCTC
+CGCCCGCATAAATTGGCACGTTTAGCAAAGCCGTTCACGGTGAATTTCGGGGAAACTCTGCCTTCCTCAA
+CCCCCTTCCAGGCTTCCCTACTTGTCTCCTAAATTCCATGTTAATGGCACTATGTTAGTAGGAAAACACT
+GTTAAGGTGTCAAGGCACACTTGTAGGTAAAGGCTAGAGTGGCTTCTCGTCCCCACAGAAAGCAAAGGCG
+TGGAGCGGGGGCGGCAGGGGCGGGTGTGCGGCCCGGAGAGCTCCCGGCTGCAGGCAGGCAGGAGGCGGCG
+CCCCCACCTCGCGGGCTCGGCGGCGGCCCCTGGGCCCAGGGCGCCCCCTGCGCAAAACCTCCTCCCCGGC
+TCCCTGCCCGCGGGGTCCCCCTAGCGGGGGTCTCCGGAGGCCTCCTCCCAAGTGAGCAGCGCTAATCCAT
+CCCCCGGATCGCGCCGGGAGAGCGGAGCCGCGGCGCGGGAGCCGCTCATTGGCATTCTGAGCACACGGGC
+GGGGGCGCGGGGCGCAGCGTGTCAAGCCGGGCCGTGCGACTCGACGACTCGGGCTCGCCAGCGCCCGGGG
+TCGCATTCCGGGGGGCTACGGAGGGCCTCCAACGGCCAGCCCCGCACTTCATGCCAGAGAAACCGATGAG
+AAGATTAAAAGCCCCCTGTAATTCCAGCAGGAAGATTCTTTCTGGCAATCTCTATTTGCAAAAAGCATGA
+TCCCGGAGATTGGAATGCAAAGAAGACGGCCCTCCCCGCCCTCCTCCCCGGCCCCCTGCGCTCCGCCCCA
+ACTTCAATTATTGTCCTGGGGACAGTGAGCCTCAGAGAGCGACAGAGGGCTCGAGAAAGCGGGTAGTCAA
+GGGGCCTTGAGACCCGGCGCTTCCAGCGCTCCGAACAGGCCCCGCCATTTAAAATTCAAATACACATCTT
+GAGTGCTTGGAAGAGAGGCCTGGCTGTGCAAATAGTGCTTGTGAATTGCACACGGGGTGGGGGGGGGTTG
+CACCTGAGCAAATAGGGAGGGGGAGGCCCGCGAGCTGGGGAGAGAGTGAGCTGAGAACAGGGAGGGGAGA
+AAATGGAAGTGTCCCCTTCCAAGAGTGTCTCCTGTTTATCCCAGAAATCACAATGACAATGCTGGGCCCT
+TTATTGGATTTTAATTAGAAAATCCACACAAGCCTCGGATTTTCACACCTCGGCCAATCTCTGGAATGTT
+TGTCCAGTTGCTACAACTACTGCAGCTATTTTTCACTCCCCGCCCCCGCCCCTCCGCAGGCCCACGCCGA
+GGCGCGGCAGGGTGCTGCGGGCAGGCGGGCAGGCGGGCAGGCGGGCCAGGGGTTTCCGCCGCGCAGCCCG
+GGTGCTGAGTGCGCGAGCAGGCGCCGCGCCCCGCGCCGGGGCGGGAGGGAAGGAGGGTGCGCCCGGCGCC
+CGCGGGAGCTCAAGGAGGCTTCCTGAGGAATCCAAGTGCAGAGCAAACACCCTCTGGATGGATTCGCGGC
+GAGGCCGGGTGTGTGCGGAGCTGGGGGTGGGGTTGGAGGAAGGCGGAAGGAAAGAGTGTCACCGGCCTCT
+GCAGGAAACGCCAGCCAACCTCTGTGACCGCCAGCCCAGACTTAGAGAGTCGTTAAGGAATGTGTCGGAA
+TCCTGTCCCTGGGGCAGTGGGGTTGGGGGAGGGAGGTGTGTGCGGGACCCGCCTGGAATCAATCGCCCCG
+CCCCGCGCCTTGCGCACCCCTGGCCTAGGAGCGCGGGCACCAAGCGTGCGCCCTCCTCCCCGAGACGCGC
+CTCCCTCTCGGAACTCAATGCCCTGTCCTCTCTTCTTTCCCTTCTCCTCACCCGCAGAGAACTCGGTGGC
+GGCCAAATCGGGAGGCTGCTTCCCGGGCTCGGCCACGGTGCACCTGGAGCAGGGCGGCACCAAGCTGGTG
+AAGGACCTGAGCCCCGGGGACCGCGTGCTGGCGGCGGACGACCAGGGCCGGCTGCTCTACAGCGACTTCC
+TCACTTTCCTGGACCGCGACGACGGCGCCAAGAAGGTCTTCTACGTGATCGAGACGCGGGAGCCGCGCGA
+GCGCCTGCTGCTCACCGCCGCGCACCTGCTCTTTGTGGCGCCGCACAACGACTCGGCCACCGGGGAGCCC
+GAGGCGTCCTCGGGCTCGGGGCCGCCTTCCGGGGGCGCACTGGGGCCTCGGGCGCTGTTCGCCAGCCGCG
+TGCGCCCGGGCCAGCGCGTGTACGTGGTGGCCGAGCGTGACGGGGACCGCCGGCTCCTGCCCGCCGCTGT
+GCACAGCGTGACCCTAAGCGAGGAGGCCGCGGGCGCCTACGCGCCGCTCACGGCCCAGGGCACCATTCTC
+ATCAACCGGGTGCTGGCCTCGTGCTACGCGGTCATCGAGGAGCACAGCTGGGCGCACCGGGCCTTCGCGC
+CCTTCCGCCTGGCGCACGCGCTCCTGGCTGCACTGGCGCCCGCGCGCACGGACCGCGGCGGGGACAGCGG
+CGGCGGGGACCGCGGGGGCGGCGGCGGCAGAGTAGCCCTAACCGCTCCAGGTGCTGCCGACGCTCCGGGT
+GCGGGGGCCACCGCGGGCATCCACTGGTACTCGCAGCTGCTCTACCAAATAGGCACCTGGCTCCTGGACA
+GCGAGGCCCTGCACCCGCTGGGCATGGCGGTCAAGTCCAGCTGAAGCCGGGGGGCCGGGGGAGGGGCGCG
+GGAGGGGGCGGGGCGGGGCAGCAACAGCAACGCAAAGCAAAAAGACACTCGGAAAAGGCGCACGAACCAG
+ACTGAGTTATAATAAGAATAAGAATAATAAAGTAGGACAGTCCAAAGTAGACTCTAAGGAAACAAGGACC
+CCGGGAAGTTTTGTTGTTGTGCTTAGTTGATATATATTTTTTGAATTTTTTTGGTTATTGTTTTATTTTG
+GTTATTTTTTCCTCCTCTCCTGGCTATTTATTTGTTTGGTATGAATAGATGTTTTAAATAATATGAACCG
+GACCTTCAAGAGCCTTAAATAGTTTGTTTCTTGGATAATTTATTATGATCATGTGAACTGTACTCACGGG
+GGAAAGATTATTTTGTGAGGCCAAGCAACCTGCTCAGAGTCTATTTTTCTACATGTCCCTCGTCCCGGCT
+GTCAGAAAGCAAACCTCTGTCCCCGCCATCCCTCCCTTCCATCTCCTGCTTCTCAGCAAGTGCAAACTCA
+AACGTGCTTCATGGGGGTCCACAAATTATATTTTTATACACAGAATTGTAAATTAGATTTTTTGAGAGAT
+CAATACTTAACTGAATTACATTTCATTTTTGAAATAGTGTAAAATATGAAAATATATTATTTTAATTTAA
+CTAGTTTCCGATGTAACAGCCATCTCCTCTGTTGTCTTTATGGTTTCATATTCCCTTTGTATTCACCATT
+TTGCCACATTCTTGGAAGCCAAGACTGTTACACACACAACATACACACACACTTTTCTTTTTCTTTTCTT
+TTCTTTTTTTTTTTTTTTTTTTTTTTTGGACAAACTGGAAGAACTGTTATTTTTAACTTCAAAGAATTTA
+TTAGAAAATAATATTTTTTAAAAGCGCACATAGTGACGAGCCCACGAGGATGGAGCCTGCAGTTTGTACA
+GAGAAAACAAAGGATGTTTTTGCATTAATAAATTGAGAAATAACGCTGTAAATTTACTAAAATGTATTTT
+TGAATATTTTGTAATAGTTTTATAGAAATAAAATGTGCCATGCACAGAACGCTTAGTATCTAATAACTAA
+GAATTCCTGTTGCAGCCCTTTTTCTTTTAGTTTTTGGCTTCTTTGTTTGGGAAACCTAGCGCTGACAGGA
+GCTCCCAATATTCTATTTAGATGTGTTGCTTATACTGTGAACTCAGACTGACTGACTTAGGTAACCAAAG
+TAGGCACACAAACCAACTTGTTTCTTCTCATGGCTGGAGAAACCTCAGCTCTGTTTGTATTTATTGTGTG
+AAGCTCTTTCTACACTCCCAAAGGTTGGGAGTGCCATTCGTGGGGACTGTGCTGTCCCCCTCACCCCACC
+CCTTAACTAGCAAAGCCTGATGTGTAAGCCCAGAGGAGGTGGCCTGGGGATGGCCACCAACAACCTTCTC
+TTAGGACTCCTGTGTGTGGTTGCTGGGCAGACCCCTGGCCTGACCCTGTTTGTGCTTCTCTGATCTGTAG
+GGAGGAGGCTCATTGCTGCTTTCTGAGGTCCTGTTGTGTCCCTTCCAGAAAGCATCCTTAGAAGAGAGGA
+CCCGGTTTGATCTTCTCTGAAGCTCCTATCCTCTTTTCTTGAGGGTCCCCTTAAATCTGAGTGGCAAGCC
+CACAGTGGCGAGGGCCAGTCGCTGGAATGTCGGGGCTGCTGTTGAGGTCCTCAGGCTACACTGGTTGTCT
+GTGTCACATGGCGGTCGGGCGTGGACTTTGATCCCTGTTGAGAGAGCATGCTGCTGTGGGCGCTGGGCTG
+GGGAAGGTCCTTCCATGCTTCATGCTGCCTTGGAGGTTTGGCCAAGAGGGTCTCTGCCCTTGGCGGTTGT
+CAGGGTCCCAGGTGGAGGACTACTCCCAGTTCTTTGGCTTACGGAAGGTGTCTGCCATGCTTTGTGCTTT
+GGGCCGAATCGTCTGAGCAGGCTGGGCCTTGGAAGAGTTGCGCTGCATGAGCTTGGGGCCTCCCAGCAGC
+TGCAGCCTGTGTAGAAGGTGGTCCAGGCTTAGGGAACAGGAGTGAACAGACTTCAGCCCCACCTGGCAGG
+GGCTGGCTCCCGAGGTTGGGCCCAGTCCCTGAGGGTCTGCTCTGCTACGGGTCTGCCCTTGAGTGGCCTT
+CCGTGGAGGGTGTGTGACCAGGTGGATGGCGCAGGGCCTCTGGAGCCCTCTCCTCAGGAGCAGTCCTCAG
+CCTTTTTCTGTAAAAGACTTTTCTTTGGTGTTCTAGGTGGTCAGCAGGTTCCAGGCTGGTGTTTACAATC
+TCGGAGGAAGTGCGATGGTTTCTGTTCTTTTGACAGTTCAGTCTGATTTCAAGTCAGTCGAAAGCGAACC
+AGAAGCACCGGGCACAGCAGCTCCTCTGGCTGTGTAGACAGACCTGGCAATGTGGCCGTGCAGCCCAGAC
+GATCAGAGAGAAGCCAGGCGTTGACCAAGCCCCAAGGTGCCTGAGGCCATGGTGCAACTCTGCTGGTGAC
+TGGGGCACCTTGGAGCAGAGCTTCACCCGGATGGGAAATCCTCACTCCTGGGTGGCACTCCCTCCTGGAC
+AGGCCCGGTGGCAGAGTGTCCGTGCTGCTGGGTGCTGTCCCCAGCCCTCCTGGTCCATCTTCTTAAGATG
+CGTCCACTGCTTTATATTTAAAATTCTCTTTTTCACAGGCAAGGAAAGGAAACCACTGCTTAGAGACACT
+AGGTACAGGGCATCAAGAGGGTGCAGCCCAGCCCCGCCAGGACGAGGCGCCGACTTCTCATTCAGGGTTG
+ACGGAGCCAAGAGTTTGTGCAAAATGTATGCATGGTGGTTGCTGCCAGCCTCCCTCATGACTAAATGCAT
+ATCTATTCCTGTCAAAACGTGTATCACAATGTACTTGAAACTGTTATCTTTGTGCTCTATTGTTTGAATA
+ATTAAAGAAATTACAGAGACTCTC</textarea>
+<button id="back-to-top" class="back-to-top-button">Back to Top</button>
+</body>
+
+<script>
+    var sortState = {
+        start: 'desc',
+        end: 'desc',
+        comp_start: 'desc',
+        comp_end: 'desc',
+        spacer: 'desc',
+        tale_length: 'desc',
+        comp_tale_length: 'desc'
+    };
+
+    function toggleSort(column) {
+        sortState[column] = sortState[column] === 'desc' ? 'asc' : 'desc';
+        loadTalePairs(currentPage);
+    }
+
+    function getColumnIndex(column) {
+        switch(column) {
+            case 'start': return 0;
+            case 'end': return 1;
+            case 'tale_length': return 3;
+            case 'spacer': return 4;
+            case 'comp_start': return 6;
+            case 'comp_end': return 5;
+            case 'comp_tale_length': return 8;
+            default: return 0;
+        }
+    }
+
+    function updateAllSortButtons() {
+        var buttons = document.getElementsByClassName('sort-button');
+        for (var i = 0; i < buttons.length; i++) {
+            var column = buttons[i].dataset.column;
+            buttons[i].textContent = sortState[column] === 'desc' ? '⬇️' : '⬆️';
+        }
+    }
+
+    function toggleRVD(type) {
+        var rvds = document.getElementsByClassName(type + '-rvd');
+        for (var i = 0; i < rvds.length; i++) {
+            var rvd = rvds[i];
+            if (rvd.textContent.includes(' ')) {
+                rvd.textContent = rvd.textContent.replace(/\s/g, '');
+            } else {
+                rvd.textContent = rvd.textContent.match(/.{1,2}/g).join(' ');
+            }
+        }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var dnaSequenceInput = document.getElementById('dna_sequence');
+        var minTaleLengthInput = document.getElementById('min_tale_length');
+        var maxTaleLengthInput = document.getElementById('max_tale_length');
+        var minSpacerLengthInput = document.getElementById('min_spacer_length');
+        var maxSpacerLengthInput = document.getElementById('max_spacer_length');
+        var dnaSequenceError = document.getElementById('dna_sequence_error');
+        var fastaMessage = document.getElementById('fasta-message');
+        var form = document.getElementById('dnaForm');
+        var pasteButton = document.getElementById('paste-button');
+        var inputExampleBtn = document.getElementById('input-example-btn');
+        var shhSequenceElement = document.getElementById('shh-sequence');
+        var backToTopButton = document.getElementById("back-to-top");
+
+        var sessionId = '{{ session_id }}';
+        var currentPage = 1;
+        var totalPages = 1;
+
+        function isValidDNA(sequence) {
+            return /^[ATCGatcg]*$/.test(sequence);
+        }
+
+        function isFASTA(input) {
+            return input.trim().startsWith('>');
+        }
+
+        function extractDNAFromFASTA(fasta) {
+            var lines = fasta.split('\n');
+            lines.shift(); // Remove the first line (header)
+            return lines.join('').replace(/\s/g, '').toUpperCase();
+        }
+
+        function processDNAInput(inputValue) {
+            if (isFASTA(inputValue)) {
+                var rawDNA = extractDNAFromFASTA(inputValue);
+                if (isValidDNA(rawDNA)) {
+                    dnaSequenceInput.value = rawDNA;
+                    fastaMessage.style.display = 'block';
+                    dnaSequenceError.style.display = 'none';
+                    dnaSequenceInput.setCustomValidity('');
+                } else {
+                    dnaSequenceError.style.display = 'block';
+                    fastaMessage.style.display = 'none';
+                    dnaSequenceInput.setCustomValidity('Invalid DNA sequence in FASTA format');
+                }
+            } else {
+                fastaMessage.style.display = 'none';
+                if (isValidDNA(inputValue)) {
+                    dnaSequenceError.style.display = 'none';
+                    dnaSequenceInput.setCustomValidity('');
+                } else {
+                    dnaSequenceError.style.display = 'block';
+                    dnaSequenceInput.setCustomValidity('Invalid characters detected');
+                }
+            }
+        }
+
+        function validateSpacerLength(minInput, maxInput) {
+            var minValue = parseInt(minInput.value);
+            var maxValue = parseInt(maxInput.value);
+            
+            if (isNaN(minValue) || minValue < 1 || minValue > 100) {
+                minInput.setCustomValidity('Minimum spacer length must be between 1 and 100.');
+            } else {
+                minInput.setCustomValidity('');
+            }
+            
+            if (isNaN(maxValue) || maxValue < 1 || maxValue > 100) {
+                maxInput.setCustomValidity('Maximum spacer length must be between 1 and 100.');
+            } else if (maxValue - minValue > 30) {
+                maxInput.setCustomValidity('The difference between maximum and minimum spacer length must not exceed 30.');
+            } else {
+                maxInput.setCustomValidity('');
+            }
+        }
+
+        function validateTaleLength(minInput, maxInput) {
+            var minValue = parseInt(minInput.value);
+            var maxValue = parseInt(maxInput.value);
+            
+            if (isNaN(minValue) || minValue < 10 || minValue > 30) {
+                minInput.setCustomValidity('Minimum TALE length must be between 10 and 30.');
+            } else {
+                minInput.setCustomValidity('');
+            }
+            
+            if (isNaN(maxValue) || maxValue < 10 || maxValue > 30) {
+                maxInput.setCustomValidity('Maximum TALE length must be between 10 and 30.');
+            } else if (maxValue - minValue > 10) {
+                maxInput.setCustomValidity('The difference between maximum and minimum TALE length must not exceed 10.');
+            } else {
+                maxInput.setCustomValidity('');
+            }
+        }
+
+        function loadTalePairs(page) {
+    fetch(`/api/tale_pairs?session_id=${sessionId}&page=${page}&sort_by=${Object.keys(sortState).find(key => sortState[key] !== 'desc')}&sort_order=${sortState[Object.keys(sortState).find(key => sortState[key] !== 'desc')]}`)
+        .then(response => response.json())
+        .then(data => {
+            var tableBody = document.getElementById('tale-pairs-body');
+            tableBody.innerHTML = '';
+            data.tale_pairs.forEach((pair, index) => {
+var row = `
+    <tr>
+        <td>${pair.start}</td>
+        <td>${pair.end}</td>
+        <td class="rvd sense-rvd">${pair.rvd}</td>
+        <td>${pair.tale_length}</td>
+        <td style="text-align: center;">${pair.spacer_length}</td>
+        <td>${pair.comp_end}</td>
+        <td>${pair.comp_start}</td>
+        <td class="rvd antisense-rvd">${pair.comp_rvd}</td>
+        <td>${pair.tale_length}</td>
+        <td>
+            <button class="view-both-btn" data-index="${index}">View Both</button>
+        </td> 
+    </tr>
+    <tr class="dropdown-row" id="dropdown-${index}" style="display: none;">
+        <td colspan="10">
+            <div class="dropdown-content"></div>
+        </td>
+    </tr>
+`;
+                tableBody.innerHTML += row;
+            });
+
+            // Add event listeners to the new buttons
+            document.querySelectorAll('.view-both-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    viewBothTales(this.getAttribute('data-index'));
+                });
+            });
+
+            currentPage = data.current_page;
+            totalPages = data.pages;
+            updatePagination();
+            updateAllSortButtons();
+        });
+}
+function viewBothTales(index) {
+    var dropdownRow = document.getElementById(`dropdown-${index}`);
+    var dropdownContent = dropdownRow.querySelector('.dropdown-content');
+    
+    if (dropdownRow.style.display === "none" || dropdownRow.style.display === "") {
+        dropdownRow.style.display = "table-row";
+        
+        // Get the RVD sequences
+        var senseRVD = document.querySelectorAll('.sense-rvd')[index].textContent;
+        var antisenseRVD = document.querySelectorAll('.antisense-rvd')[index].textContent;
+        
+        var senseRVDsplit = senseRVD.match(/.{1,2}/g);
+        var antisenseRVDsplit = antisenseRVD.match(/.{1,2}/g);
+        
+        function formatRVD(rvdArray) {
+            return rvdArray.map((rvd, index) => `${rvd}<sub>${index + 1}</sub>`).join('-');
+        }
+        
+        // Function to convert RVD to DNA
+        function rvdToDNA(rvd) {
+            const rvdToDNAMap = {
+                'HD': 'C', 'NI': 'A', 'NG': 'T', 'NN': 'G', 'NH': 'G'
+            };
+            return rvdToDNAMap[rvd] || 'N';  // Return 'N' for unknown RVDs
+        }
+        
+        // Generate DNA sequences
+        var senseDNA = senseRVDsplit.map(rvdToDNA).join('');
+        var antisenseDNA = antisenseRVDsplit.map(rvdToDNA).join('');
+        
+        var content = `
+            <h4>TALE Binding Sites</h4>
+            <div class="tale-binding-sites">
+                <p><strong>Sense strand DNA:</strong> ${senseDNA}<br>
+                    <strong>Antisense strand DNA:</strong> ${antisenseDNA}</p>
+            </div>
+        `;
+        
+        // Add pentamer creation process only for 18bp TALEs
+        if (senseRVD.length === 36) { // 18 * 2 because each RVD is 2 characters
+            content += `
+                <h4>Pentamer Creation Process</h4>
+                <p>This process describes the method for creating TALE/TALENs as outlined by 
+                <a href="https://doi.org/10.1016/j.omtm.2019.02.004" target="_blank">Zhang et al. (2019)</a>. 
+                This method allows for rapid assembly of custom TALEs in just one day.</p>
+                <p>The process involves creating four pentamers that will later be combined to form the complete TALE. 
+                Each pentamer consists of 5 RVDs (Repeat Variable Diresidues) that correspond to the DNA sequence 
+                the TALE will bind to. The process shown below is specific for 18-bp TALEs.</p>
+                <div class="pentamer-container">
+                    <div class="pentamer-strand">
+                        <h5>Sense strand pentamers:</h5>
+                        <div class="pentamer-row">
+                            <div class="pentamer">${formatRVD(senseRVDsplit.slice(0, 5))}</div>
+                            <div class="pentamer">${formatRVD(senseRVDsplit.slice(5, 10))}</div>
+                            <div class="pentamer">dsDNA10.5-${formatRVD(senseRVDsplit.slice(10, 14))}</div>
+                            <div class="pentamer">${formatRVD(senseRVDsplit.slice(14, 16))}dsDNA17.5-${formatRVD(senseRVDsplit.slice(16, 18))}</div>
+                        </div>
+                    </div>
+                    <div class="pentamer-strand">
+                        <h5>Antisense strand pentamers:</h5>
+                        <div class="pentamer-row">
+                            <div class="pentamer">${formatRVD(antisenseRVDsplit.slice(0, 5))}</div>
+                            <div class="pentamer">${formatRVD(antisenseRVDsplit.slice(5, 10))}</div>
+                            <div class="pentamer">dsDNA10.5-${formatRVD(antisenseRVDsplit.slice(10, 14))}</div>
+                            <div class="pentamer">${formatRVD(antisenseRVDsplit.slice(14, 16))}dsDNA17.5-${formatRVD(antisenseRVDsplit.slice(16, 18))}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pentamer-ingredients">
+                    <h5>Golden-Gate Ingredients:</h5>
+                    <div class="reaction-grid">
+                        <div class="reaction-item"><i class="fas fa-vial"></i> 10 U BsaI</div>
+                        <div class="reaction-item"><i class="fas fa-dna"></i> 400 U T4 DNA ligase</div>
+                        <div class="reaction-item"><i class="fas fa-flask"></i> 1× T4 DNA ligase buffer</div>
+                        <div class="reaction-item"><i class="fas fa-atom"></i> 2 μg BSA</div>
+                        <div class="reaction-item"><i class="fas fa-dna"></i> 200 ng of each monomer</div>
+                    </div>
+                </div>
+                <div class="thermocycler-process">
+                    <h5>Thermocycler Process:</h5>
+                    <div class="process-steps">
+                        <div class="process-step"><i class="fas fa-redo"></i> 10 cycles of:</div>
+                        <div class="process-step"><i class="fas fa-temperature-high"></i> 37°C for 5 min</div>
+                        <div class="process-step"><i class="fas fa-temperature-low"></i> 16°C for 10 min</div>
+                        <div class="process-step"><i class="fas fa-fire"></i> 50°C for 5 min (enzyme inactivation)</div>
+                        <div class="process-step"><i class="fas fa-fire-alt"></i> 80°C for 5 min (enzyme inactivation)</div>
+                    </div>
+                </div>
+                <div class="final-steps">
+                    <h5>Steps:</h5>
+                    <ol>
+                        <p> 1. Generate ciruclar pentamers by Golden-Gate digestion-ligation reaction. (3hrs)<br></p>
+                        <p>Set up four digestion-ligation reactions for producing pentamers.<br> Place 10 U BsaI, 400 U T4 DNA ligase, 1 T4 DNA ligase buffer, 2 mg BSA, and 200 ng of each of five monomers in strip tubes.</p>                  
+                        <p>Incubate strip tubes in a thermocycler for 10 cycles of  37°C for 5 min and 16°C for 10 min.<br> Inactivate enzymes with 50°C for 5 minutes and 80°C for 5 minutes.</p>
+                        <p>2. Treat pentamers with plasmid-safe nuclease. (1 hr)<br></p>
+                        <p>Remove remaining linear DNA with 1μL Plasmid-Safe nuclease (10 U/μL; Epibio) and 1 μL ATP (10 mM) to each pentamer containing strip tube<br>
+                            Incubate at 37°C for 30 minutes. <br>
+                            Then inactivate the plasmid safe nuclease at 70°C for 30 minutes.<br><p>
+                        <p>3. Purify pentamers with a PCR pleaning column. (0.5hr)<br></p>
+                        <p>Purify pentamers on a PCR cleaning column and collect in water at a concentration of 100ng/μL.<br></p>
+                        <p>4. Generate TALE plasmid by Golden-Gate digestion-ligation reaction. (3hrs)<br></p>
+                        <p>Place 200ng of each of the four pentamers, 20μL of TALE backbone, 10 U BsmBI, 400 U T4 DNA ligase, 1 T4 DNA ligase buffer in a strip tube.<br>
+                            Incubate the strip tube in a thermocycler for 10 cycles of  37°C for 5 min and 16°C for 10 min.<br>
+                                Inactivate enzymes with 50°C for 5 minutes and 80°C for 5 minutes.<br></p>
+                        <p>5. Transform DH5α with generated plasmid. (2hrs + 16hrs)<br></p>
+                        <p>Transform E. coli DH5α TALE products (2hr) and cultivate positive colonies overnight (16hrs) on lysogeny broth agar containing kanamycin, X-gal,and IPTG at 37°C. <br>
+                            Identify positive colonies by colony PCR with primers TAL-F and TAL-R  using 1x premix Taq. <br>
+                            Cultivate positive colonies overnight in lysogeny broth medium containing 100μg/mL kanamycin at 37°C.<br></p>
+                        <p>6. Purify pentamers with a PCR pleaning column. (1hr)<br></p>
+                        <p>Extract the plasmid with the EndoFree Plasmid kit according to manufacturer instructions (QIAGEN)<br>
+                            Verify the plasmid using the QIAprep Spin Miniprep Kit (QIAGEN) to prepare the plasmid and verify by EcoRI digestion.<br></p>
+
+                    </ol>
+                </div>
+            `;
+        } else {
+            content += `
+                <p>The pentamer creation process is specifically designed for 18bp TALEs. 
+                For custom assembly of TALEs with different lengths, please refer to the 
+                <a href="https://doi.org/10.1016/j.omtm.2019.02.004" target="_blank">Zhang et al. (2019)</a> 
+                paper for guidance on adapting the process.</p>
+            `;
+        }
+        
+        dropdownContent.innerHTML = content;
+    } else {
+        dropdownRow.style.display = "none";
+    }
+}
+        function updatePagination() {
+            var pageInfoText = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('page-info').textContent = pageInfoText;
+            document.getElementById('page-info-top').textContent = pageInfoText;
+            
+            var prevDisabled = currentPage === 1;
+            var nextDisabled = currentPage === totalPages;
+            
+            document.getElementById('prev-page').disabled = prevDisabled;
+            document.getElementById('next-page').disabled = nextDisabled;
+            document.getElementById('prev-page-top').disabled = prevDisabled;
+            document.getElementById('next-page-top').disabled = nextDisabled;
+        }
+
+        if (dnaSequenceInput) {
+            dnaSequenceInput.addEventListener('input', function() {
+                processDNAInput(this.value);
+            });
+        }
+
+        if (minTaleLengthInput && maxTaleLengthInput) {
+            minTaleLengthInput.addEventListener('input', function() {
+                validateTaleLength(minTaleLengthInput, maxTaleLengthInput);
+            });
+            maxTaleLengthInput.addEventListener('input', function() {
+                validateTaleLength(minTaleLengthInput, maxTaleLengthInput);
+            });
+        }
+
+        if (minSpacerLengthInput && maxSpacerLengthInput) {
+            minSpacerLengthInput.addEventListener('input', function() {
+                validateSpacerLength(minSpacerLengthInput, maxSpacerLengthInput);
+            });
+            maxSpacerLengthInput.addEventListener('input', function() {
+                validateSpacerLength(minSpacerLengthInput, maxSpacerLengthInput);
+            });
+        }
+
+        if (pasteButton) {
+            pasteButton.addEventListener('click', function() {
+                navigator.clipboard.readText().then(function(clipText) {
+                    dnaSequenceInput.value = clipText;
+                    processDNAInput(clipText);
+                });
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                if (!dnaSequenceInput.checkValidity()) {
+                    event.preventDefault();
+                }
+                validateTaleLength(minTaleLengthInput, maxTaleLengthInput);
+                validateSpacerLength(minSpacerLengthInput, maxSpacerLengthInput);
+                
+                var minTaleLength = parseInt(minTaleLengthInput.value);
+                var maxTaleLength = parseInt(maxTaleLengthInput.value);
+                var minSpacerLength = parseInt(minSpacerLengthInput.value);
+                var maxSpacerLength = parseInt(maxSpacerLengthInput.value);
+                
+                if (minTaleLength > maxTaleLength) {
+                    event.preventDefault();
+                    alert('Minimum TALE length cannot be greater than maximum TALE length.');
+                }
+                
+                if (maxTaleLength - minTaleLength > 10) {
+                    event.preventDefault();
+                    alert('The difference between maximum and minimum TALE length must not exceed 10.');
+                }
+                
+                if (minSpacerLength > maxSpacerLength) {
+                    event.preventDefault();
+                    alert('Minimum spacer length cannot be greater than maximum spacer length.');
+                }
+
+                if (maxSpacerLength - minSpacerLength > 30) {
+                    event.preventDefault();
+                    alert('The difference between maximum and minimum spacer length must not exceed 30.');
+                }
+            });
+        }
+
+        if (inputExampleBtn) {
+            inputExampleBtn.addEventListener('click', function() {
+                var shhSequence = shhSequenceElement.value.trim();
+                dnaSequenceInput.value = shhSequence;
+                processDNAInput(shhSequence);
+            });
+        }
+
+        function changePage(delta) {
+            var newPage = currentPage + delta;
+            if (newPage >= 1 && newPage <= totalPages) {
+                loadTalePairs(newPage);
+            }
+        }
+
+        document.getElementById('prev-page').addEventListener('click', function() {
+            changePage(-1);
+        });
+
+        document.getElementById('next-page').addEventListener('click', function() {
+            changePage(1);
+        });
+
+        document.getElementById('prev-page-top').addEventListener('click', function() {
+            changePage(-1);
+        });
+
+        document.getElementById('next-page-top').addEventListener('click', function() {
+            changePage(1);
+        });
+
+        document.querySelectorAll('.sort-button').forEach(button => {
+            button.addEventListener('click', function() {
+                toggleSort(this.dataset.column);
+            });
+        });
+
+        document.querySelectorAll('.rvd-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                toggleRVD(this.dataset.type);
+            });
+        });
+
+        if (sessionId) {
+            loadTalePairs(1);
+        }
+
+        window.onscroll = function() {
+            if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                backToTopButton.style.display = "block";
+            } else {
+                backToTopButton.style.display = "none";
+            }
+        };
+
+        backToTopButton.addEventListener("click", function(){
+            document.body.scrollTop = 0; // For Safari
+            document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+        });
+    });
+</script>
+
+</html>
