@@ -5,4 +5,3 @@ WTForms
 SQLAlchemy
 Werkzeug
 gunicorn
-plotly
