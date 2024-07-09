@@ -7,10 +7,6 @@ Applies various filtering criteria including CpG island detection, consecutive A
 Allows for customizable TALE and spacer length ranges
 Provides a web interface for easy use and result visualization
 
-Installation
-[add later]
-Modify Search Parameters
-[to be added]
 Contributing
 Contributions to the TALE Pair Finder project are welcome. Please feel free to submit pull requests, report bugs, or suggest new features.
 License
